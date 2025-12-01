@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicted Sales - SalesVision</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card { border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn-custom { background: #007bff; border: none; border-radius: 25px; transition: 0.3s; }
+        .btn-custom:hover { background: #0056b3; transform: scale(1.05); }
+        .graph-container { background: white; padding: 20px; border-radius: 10px; }
+        table { width: 100%; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">SalesVision</a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">Back to Dashboard</a>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Predicted Sales</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h3>Generate Prediction</h3>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <input type="number" name="years" class="form-control" placeholder="Number of Years" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-custom w-100">Generate Prediction</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4">
+                    <h3>Predicted Sales Graph</h3>
+                    <div class="graph-container">
+                        <!-- DEBUG: Check if graph_html is set and not empty -->
+                        {% if graph_html and graph_html.strip() %}
+                            {{ graph_html|safe }}  <!-- Renders the Plotly graph for predicted sales -->
+                        {% else %}
+                            <p>No predictions yet. Enter years to generate the graph. Ensure historical data is added first.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if predicted_data %}
+            <div class="card p-4 mt-4">
+                <h3>Predicted Data Table</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Month</th>
+                            <th>Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in predicted_data %}
+                            <tr>
+                                <td>{{ row.year }}</td>
+                                <td>{{ row.month }}</td>
+                                <td>{{ row.sales | round(2) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{{ url_for('export_csv') }}" class="btn btn-custom">Export as CSV</a>
+            </div>
+        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
